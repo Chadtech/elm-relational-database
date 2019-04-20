@@ -120,6 +120,13 @@ mapInternalRemoteDataError f remoteData =
             Internal__Failed <| f error
 
 
+{-| An empty `Db` with no entries
+-}
+empty : Db item
+empty =
+    Db Dict.empty
+
+
 {-| Insert an `item` into a `Db`, when it has been successfully loaded
 -}
 succeed : ( Id error item, item ) -> Db error item -> Db error item
