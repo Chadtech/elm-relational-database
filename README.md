@@ -111,7 +111,7 @@ updateUsersCatsFavoriteFood userId catId foodId =
 
 Now with `Id x`, it is impossible (again) to mix up a `Id User` with a `Id Cat`. They have different types. And the compiler will point out if you try and use a `Id User` where only a `Id Cat` works.
 
-### Okay there is one trade off
+### Okay, there is one trade off
 
 The following code is not possible due to a circular definition of `User`..
 
