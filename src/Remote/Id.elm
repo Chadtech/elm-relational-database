@@ -1,6 +1,6 @@
 module Remote.Id exposing (Id, fromString, toString, encode, decoder, generator)
 
-{-| A simple `Id` type for your types that have ids.
+{-| Much like the `Id` type in the non-remote version of this module, except now the `Id` might also point to the `error` that occured when trying to load the `item`.
 
 
 # Id
