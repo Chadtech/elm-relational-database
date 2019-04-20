@@ -7,7 +7,7 @@ module Remote.Db exposing
     , remove
     )
 
-{-| This module combines [Kris Jenkin's RemoteData package][kris] with the `Db` type in this package. The kinds of things you store in a relational database are usually fetched from a remote source, and the `RemoteData` type represents whether your data is loading, loaded, or failed to load. By storing data as `RemoteData`, this module can make the assumption that `Id` that are missing from the `Db`are `RemoteData.NotAsked`. This assumption permits our `get` function to return a `RemoteData error item` instead of a `Maybe item` or even a `Maybe (RemoteData error item)`.
+{-| This module combines Kris Jenkin's RemoteData package (<https://package.elm-lang.org/packages/krisajenkins/remotedata/latest>) with the `Db` type in this package. The kinds of things you store in a relational database are usually fetched from a remote source, and the `RemoteData` type represents whether your data is loading, loaded, or failed to load. By storing data as `RemoteData`, this module can make the assumption that `Id` that are missing from the `Db`are `RemoteData.NotAsked`. This assumption permits our `get` function to return a `RemoteData error item` instead of a `Maybe item` or even a `Maybe (RemoteData error item)`.
 
 
 # Db
@@ -38,8 +38,6 @@ module Remote.Db exposing
 # Remove
 
 @docs remove
-
-[kris]: https://package.elm-lang.org/packages/krisajenkins/remotedata/latest/
 
 -}
 
