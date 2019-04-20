@@ -1,5 +1,5 @@
 module Remote.Db exposing
-    ( Db
+    ( Db, empty
     , succeed, succeedMany, loading, loadingMany, fail, failMany, insert
     , get, getWithId, getMany
     , update
@@ -12,7 +12,7 @@ module Remote.Db exposing
 
 # Db
 
-@docs Db, empty RemoteData, Row)
+@docs Db, empty, Row)
 
 
 # Insert
@@ -122,7 +122,7 @@ mapInternalRemoteDataError f remoteData =
 
 {-| An empty `Db` with no entries
 -}
-empty : Db item
+empty : Db error item
 empty =
     Db Dict.empty
 
