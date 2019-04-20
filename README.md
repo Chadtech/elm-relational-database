@@ -1,35 +1,45 @@
 # Elm Relational Database
 
-Some software projects involve the front end fetching a large amount of unknown, dynamic and inter-related data. Heres what I mean, taking a `User` as an example..
+Some software projects involve the front end handling a large amount of unknown, dynamic and inter-related data, often retrieved from a remote source. Heres what I mean, taking a `User` as an example..
 
-- "Large" as in, the front end might get a long lists of `User`s.
-- "Unknown" as in, it has no idea how many or what `User` it will get
-- "Inter-related" as in, `User`s might be friends with each other (in the software). 
-- "dynamic" in the sense that, the `User`s and their relationship might change over time. A new `User` might show up, or, two existing `User`s might become friends during the run time.
+- `Large` meaing, the front end might get a lot of `User`s.
+- `Unknown` meaning, it has no idea how many or what `User`s it will get
+- `Inter-related` meaning, `User`s might be related to other data, for example your software might let `User` be friends with each other. 
+- `Dynamic` meaning, the `User`s and their relationship might change over time. A new `User` might show up, or, two existing `User`s might become friends with each other during or between run times.
 
-Projects like this need a centralized single source of truth for all this data, so it can be represented the same across your entire project. Indeed, thats exactly what a relational database is. [If you still are wondering what the deal is, Richard Feldman gave a really good talk on relational database stuff in Elm.](https://www.youtube.com/watch?v=28OdemxhfbU)
-
+Projects like this need a centralized single source of truth for all this data, so so that your data can be represented the same across the entire software. Indeed, thats exactly what a relational database is. 
 ```elm
 import Db exposing (Db)
 
 type alias Model =
     { users : Db User }
 ```
+[If you still are wondering what the deal is, Richard Feldman gave a really good talk on relational database stuff in Elm.](https://www.youtube.com/watch?v=28OdemxhfbU)
+
 
 ## This package has three parts.
+- `Db`
+- `Id`
+- `Remote.Db`
 
-## Db
+### Db
 
 Short for "Database", `Db item` is basically a glorified `Dict String item`. It takes `Id item`, and it if has an `item` under that `Id item`, it gives it to you.
 
 ```elm
 
-    users : Db User
+users : Db User
+users =
+    --
 
-    Db.get users (Id.fromString "bob") : (Id User, Maybe User)
+maybeBob : (Id User, Maybe User)
+maybeBob =
+    Db.get users (Id.fromString "bob") 
 ```
 
-## Id
+The functions in the `Db` module are much like those of `Dict`, but they are specialized for the use case of a relational database.
+
+### Id
 
 This package exposes a really simple type called `Id`.
 
@@ -49,7 +59,7 @@ type alias User =
     }
 ```
 
-# Why an `Id` and not a `String`?
+### Why an `Id` and not a `String`?
 
 The Elm compiler is totally okay with the following code snippet..
 
@@ -73,7 +83,7 @@ view model =
 
 These mistake is really easy to make and they cause real problems, but if you just use an `Id` you can make them impossible.
 
-# Whats the `x` in `Id x` for?
+### Whats the `x` in `Id x` for?
 
 You understand the problem in the previous example right? Here is a very similar problem..
 
@@ -101,7 +111,7 @@ updateUsersCatsFavoriteFood userId catId foodId =
 
 Now with `Id x`, it is impossible (again) to mix up a `Id User` with a `Id Cat`. They have different types. And the compiler will point out if you try and use a `Id User` where only a `Id Cat` works.
 
-# Okay there is one trade off
+### Okay there is one trade off
 
 The following code is not possible due to a circular definition of `User`..
 
@@ -134,7 +144,7 @@ type User
     (Id User, User)
 ```
 
-# Message Board Example
+### Message Board Example
 
 ```elm
 type alias Thread =
