@@ -9,7 +9,17 @@ module Db exposing
     , filter, filterMissing, allPresent
     )
 
-{-| A way of storing your data by `Id`
+{-| Short for "Database", `Db item` is basically a glorified `Dict String item`. It takes `Id item`, and it if has an `item` under that `Id item`, it gives it to you.
+
+    users : Db User
+    users =
+        --
+
+    maybeBob : (Id User, Maybe User)
+    maybeBob =
+        Db.get users (Id.fromString "bob")
+
+The functions in the `Db` module are much like those of `Dict`, but they are specialized for the use case of a relational database.
 
 
 # Db

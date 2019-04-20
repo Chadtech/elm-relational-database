@@ -7,7 +7,8 @@
     "exposed-modules": [
         "Id",
         "Db",
-        "Remote.Db"
+        "Remote.Db",
+        "Remote.Id"
     ],
     "elm-version": "0.19.0 <= v < 0.20.0",
     "dependencies": {
