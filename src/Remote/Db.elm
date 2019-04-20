@@ -1,5 +1,5 @@
 module Remote.Db exposing
-    ( Db, empty
+    ( Db, empty, Row
     , succeed, succeedMany, loading, loadingMany, fail, failMany, insert
     , get, getWithId, getMany
     , update
@@ -12,7 +12,7 @@ module Remote.Db exposing
 
 # Db
 
-@docs Db, empty, Row)
+@docs Db, empty, Row
 
 
 # Insert
