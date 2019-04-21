@@ -1,10 +1,12 @@
 module Remote.Db exposing
     ( Db, empty, Row
+    , fromList, toList
     , succeed, succeedMany, loading, loadingMany, fail, failMany, insert
-    , get, getWithId, getMany
+    , get, getWithId, getMany, getSuccesses, getErrors, getLoading
     , update
     , map, mapError, mapItem
     , remove
+    , filter
     )
 
 {-| This module combines Kris Jenkin's RemoteData package (<https://package.elm-lang.org/packages/krisajenkins/remotedata/latest>) with the `Db` type in this package. The kinds of things you store in a relational database are usually fetched from a remote source, and the `RemoteData` type represents whether your data is loading, loaded, or failed to load. By storing data as `RemoteData`, this module can make the assumption that `Id` that are missing from the `Db`are `RemoteData.NotAsked`. This assumption permits our `get` function to return a `RemoteData error item` instead of a `Maybe item` or even a `Maybe (RemoteData error item)`.
@@ -15,6 +17,11 @@ module Remote.Db exposing
 @docs Db, empty, Row
 
 
+# List
+
+@docs fromList, toList
+
+
 # Insert
 
 @docs succeed, succeedMany, loading, loadingMany, fail, failMany, insert
@@ -22,7 +29,7 @@ module Remote.Db exposing
 
 # Get
 
-@docs get, getWithId, getMany
+@docs get, getWithId, getMany, getSuccesses, getErrors, getLoading
 
 
 # Update
@@ -38,6 +45,11 @@ module Remote.Db exposing
 # Remove
 
 @docs remove
+
+
+# Filter
+
+@docs filter
 
 -}
 
@@ -63,6 +75,16 @@ type RemoteData__Internal error item
     = Internal__Loading
     | Internal__Loaded item
     | Internal__Failed error
+
+
+internalRemoteDataToMaybe : RemoteData__Internal error item -> Maybe item
+internalRemoteDataToMaybe internalRemoteData =
+    case internalRemoteData of
+        Internal__Loaded item ->
+            Just item
+
+        _ ->
+            Nothing
 
 
 internalRemoteDataToRemoteData : RemoteData__Internal error item -> RemoteData error item
@@ -118,6 +140,39 @@ mapInternalRemoteDataError f remoteData =
 
         Internal__Failed error ->
             Internal__Failed <| f error
+
+
+{-| Turn your `Db` into a list
+-}
+toList : Db error item -> List (Row error item)
+toList (Db db) =
+    let
+        idAndRemoteData : ( String, RemoteData__Internal error item ) -> ( Id error item, RemoteData error item )
+        idAndRemoteData ( idStr, remoteDataInternal ) =
+            ( Id.fromString idStr
+            , internalRemoteDataToRemoteData remoteDataInternal
+            )
+    in
+    db
+        |> Dict.toList
+        |> List.map idAndRemoteData
+
+
+{-| Initialize a `Db` from a list of id-value pairs
+-}
+fromList : List (Row error item) -> Db error item
+fromList items =
+    let
+        idAndRemoteData : Row error item -> Maybe ( String, RemoteData__Internal error item )
+        idAndRemoteData ( id, remoteData ) =
+            remoteData
+                |> remoteDataToInternalRemoteData
+                |> Maybe.map (Tuple.pair (Id.toString id))
+    in
+    items
+        |> List.filterMap idAndRemoteData
+        |> Dict.fromList
+        |> Db
 
 
 {-| An empty `Db` with no entries
@@ -240,6 +295,55 @@ getWithId db id =
         |> Tuple.pair id
 
 
+{-| Get only the succcessfully loaded `item` in a `Db`
+-}
+getSuccesses : Db error item -> List ( Id error item, item )
+getSuccesses =
+    let
+        onlyLoaded : ( Id error item, RemoteData error item ) -> Maybe ( Id error item, item )
+        onlyLoaded ( id, remoteData ) =
+            case remoteData of
+                Success item ->
+                    Just ( id, item )
+
+                _ ->
+                    Nothing
+    in
+    toList >> List.filterMap onlyLoaded
+
+
+{-| Get a list of `Id`s that are still `RemoteData.Loading`
+-}
+getLoading : Db error item -> List (Id error item)
+getLoading =
+    let
+        onlyLoading : ( Id error item, RemoteData error item ) -> Maybe (Id error item)
+        onlyLoading ( id, remoteData ) =
+            case remoteData of
+                Loading ->
+                    Just id
+
+                _ ->
+                    Nothing
+    in
+    toList >> List.filterMap onlyLoading
+
+
+getErrors : Db error item -> List ( Id error item, error )
+getErrors =
+    let
+        onlyError : ( Id error item, RemoteData error item ) -> Maybe ( Id error item, error )
+        onlyError ( id, remoteData ) =
+            case remoteData of
+                Failure error ->
+                    Just ( id, error )
+
+                _ ->
+                    Nothing
+    in
+    toList >> List.filterMap onlyError
+
+
 {-| Get many items from a `Db`. The `(id, RemoteData.NotAsked)` case represents the item under that `Id` being absent.
 -}
 getMany : Db error item -> List (Id error item) -> List (Row error item)
@@ -268,6 +372,28 @@ update id mapFunction (Db dict) =
                         |> remoteDataToInternalRemoteData
     in
     Dict.update (Id.toString id) updateFunction dict
+        |> Db
+
+
+{-| Filter out items from a `Db`, only the successfully loaded `item` are considered.
+-}
+filter : (( Id error item, item ) -> Bool) -> Db error item -> Db error item
+filter rowFilterFunction (Db dict) =
+    let
+        uncurried : String -> RemoteData__Internal error item -> Bool
+        uncurried key value =
+            case value of
+                Internal__Loaded item ->
+                    rowFilterFunction
+                        ( Id.fromString key
+                        , item
+                        )
+
+                _ ->
+                    True
+    in
+    dict
+        |> Dict.filter uncurried
         |> Db
 
 
