@@ -3,7 +3,7 @@
     "name": "Chadtech/elm-relational-database",
     "summary": "Keep track of lots of different data by ids",
     "license": "BSD-3-Clause",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "exposed-modules": [
         "Id",
         "Db",

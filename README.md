@@ -21,6 +21,15 @@ type alias Model =
 ## Message Board Example
 
 ```elm
+import Db exposing (Db)
+import Id exposing (Id)
+
+type alias Model =
+    { threads : Db Thread
+    , posts : Db Post
+    }
+
+
 type alias Thread =
     { title : String
     , posts : List (Id Post)
@@ -33,37 +42,27 @@ type alias Post =
     }
 
 
+-- ..
+
 threadView : Db Post -> (Id Thread, Thread) -> Html Msg
 threadView postsDb (threadId, thread) =
     thread.posts
         |> Db.getMany postsDb
+        |> Db.filterMissing 
         |> List.map postView
-        |> (::) (p [] [ Html.text thread.title ])
-        |> div [ css [ threadStyle ] ]
+        |> (::) (Html.p [] [ Html.text thread.title ])
+        |> Html.div [ css [ threadStyle ] ]
 
 
-postView : (Id Post, Maybe Post) -> Html Msg
-postView post =
+postView : (Id Post, Post) -> Html Msg
+postView (id, post) =
     Html.div
         [ Attrs.css [ postStyle ] ]
-        (postBody post)
-
-
-postBody : (Id Post, Maybe Post) -> List (Html Msg)
-postBody (id, maybePost) =
-    case maybePost of
-        Just post ->
-            [ Html.p
-                []
-                [ Html.text post.author ]
-            , Html.p
-                [ Event.onClick (ReplyToPostClicked id) ]
-                [ Html.text post.content ]
-            ]
-
-        Nothing ->
-            [ Html.p
-                []
-                [ Html.text "Post not found" ]
-            ]
+        [ Html.p
+            []
+            [ Html.text post.author ]
+        , Html.p
+            [ Event.onClick (ReplyToPostClicked id) ]
+            [ Html.text post.content ]
+        ]
 ```
