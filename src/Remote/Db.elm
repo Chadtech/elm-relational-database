@@ -329,6 +329,8 @@ getLoading =
     toList >> List.filterMap onlyLoading
 
 
+{-| Get a list of `Id` that have failed to load and the error that occured when loading that `Id`.
+-}
 getErrors : Db error item -> List ( Id error item, error )
 getErrors =
     let
