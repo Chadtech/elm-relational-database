@@ -2,7 +2,7 @@
 
 Some software projects involve the front end handling a large amount of unknown, dynamic and inter-related data, often retrieved from a remote source. Heres what I mean, taking a `User` as an example..
 
-- `Large` meaing, the front end might get a lot of `User`s.
+- `Large` meaning, the front end might get a lot of `User`s.
 - `Unknown` meaning, it has no idea how many or what `User`s it will get
 - `Inter-related` meaning, `User`s might be related to other data, for example your software might let `User` be friends with each other. 
 - `Dynamic` meaning, the `User`s and their relationship might change over time. A new `User` might show up, or, two existing `User`s might become friends with each other during or between run times.
@@ -46,12 +46,16 @@ type alias Post =
 
 threadView : Db Post -> (Id Thread, Thread) -> Html Msg
 threadView postsDb (threadId, thread) =
-    thread.posts
-        |> Db.getMany postsDb
-        |> Db.filterMissing 
-        |> List.map postView
-        |> (::) (Html.p [] [ Html.text thread.title ])
-        |> Html.div [ css [ threadStyle ] ]
+    let
+        posts : List (Html Msg)
+        posts =
+            thread.posts
+                |> Db.getMany postsDb
+                |> Db.filterMissing 
+                |> List.map postView
+    in
+    Html.div [ css [ threadStyle ] ]
+        (Html.p [] [ Html.text thread.title ] :: posts)
 
 
 postView : (Id Post, Post) -> Html Msg
